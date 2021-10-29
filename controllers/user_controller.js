@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user_model');
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 const {
     registerValidation,
     loginValidation
@@ -23,7 +25,7 @@ exports.register = async (req, res, next) => {
     }).exec()
 
 
-    if (checkUserName.length >0 ) {
+    if (checkUserName.length > 0) {
         console.log(checkUserName)
         res.status(409).send("User Name is exist")
     } else {
@@ -37,6 +39,33 @@ exports.register = async (req, res, next) => {
             console.log(req.body)
             const savedUser = await user.save()
                 .then(result => {
+
+                    //sending email
+                    var transporter = nodemailer.createTransport(smtpTransport({
+                        service: 'gmail',
+                        host: 'smtp.gmail.com',
+                        auth: {
+                            user: 'blabsbinura@gmail.com',
+                            pass: '80216620Bi'
+                        }
+                    }));
+
+                    var mailOptions = {
+                        from: 'blabsbinura@gmail.com',
+                        to: req.body.email,
+                        subject: 'Conrfirm Email - no @reply',
+                        text: `Hi ${req.body.name},
+                        click this link to confirm the email http://localhost:3000/user/consirm_mail/${req.body._id}
+                        `
+                    };
+
+                    transporter.sendMail(mailOptions, function (error, info) {
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            console.log('Email sent: ' + info.response);
+                        }
+                    });
                     res.status(201)
                     res.send(result)
                 })
@@ -49,31 +78,58 @@ exports.register = async (req, res, next) => {
 
 exports.user_login = async (req, res, next) => {
     //validation user login
-    const {error} = loginValidation(req.body)
-    if(error) return res.status(400).send(error.details[0].message)
+    const {
+        error
+    } = loginValidation(req.body)
+    if (error) return res.status(400).send(error.details[0].message)
 
     //find userby email
     User.find({
-        name: req.body.name,
-      }).exec()
-      .then(async findResult => {
-          console.log(findResult)
-          if (findResult.length <= 0) {
-              console.log(findResult)
-            res.status(409).send("User name not exist")
-          } else {
-              const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
-              if(checkPassword){
-                  const token = jwt.sign({_id: findResult[0]._id},"gkuybbghashafafgyb")
-                  res.header('auth-token',token).send(token)
-              } else{
-                res.status(403).send("username or passsword error")
-              }
-              
-          }
-      })
-      .catch(err => {
-        console.log(err);
-        res.status(400).send(err)
-      });
-  }
+            name: req.body.name,
+        }).exec()
+        .then(async findResult => {
+            console.log(findResult)
+            if (findResult.length == 0) {
+                console.log(findResult)
+                res.status(409).send("User name not exist")
+            } else {
+                const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
+                if (checkPassword) {
+                    const token = jwt.sign({
+                        _id: findResult[0]._id
+                    }, "gkuybbghashafafgyb")
+                    res.header('auth-token', token).send(token)
+                } else {
+                    res.status(403).send("username or passsword error")
+                }
+
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(400).send(err)
+        });
+}
+
+
+exports.confirm_email = async (req, res, next) => {
+
+    //find userby email
+    User.find({
+            _id: req.params.id,
+        }).exec()
+        .then(async findResult => {
+            console.log(findResult)
+            if (findResult.length == 0) {
+                console.log(findResult)
+                res.status(409).send("User not exist")
+            } else {
+
+
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(400).send(err)
+        });
+}

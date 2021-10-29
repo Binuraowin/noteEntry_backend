@@ -8,6 +8,7 @@ router.post("/", UserController.register);
 
 router.post("/login", UserController.user_login);
 
+router.post("/consirm_mail/:id", UserController.confirm_email);
 
 
 module.exports = router;
