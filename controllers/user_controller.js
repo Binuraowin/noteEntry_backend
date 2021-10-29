@@ -17,17 +17,16 @@ exports.register = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
-    //check email existence
-    const checkEmail = await User.find({
-        email: req.body.email,
+    //check user name existence
+    const checkUserName = await User.find({
+        name: req.body.name,
     }).exec()
 
 
-    if (checkEmail.length >0 ) {
-        console.log(checkEmail)
-        res.status(409).send("Email is exist")
+    if (checkUserName.length >0 ) {
+        console.log(checkUserName)
+        res.status(409).send("User Name is exist")
     } else {
-        console.log(checkEmail)
         const user = new User({
             _id: new mongoose.Types.ObjectId(),
             name: req.body.name,
@@ -48,3 +47,33 @@ exports.register = async (req, res, next) => {
 
 }
 
+exports.user_login = async (req, res, next) => {
+    //validation user login
+    const {error} = loginValidation(req.body)
+    if(error) return res.status(400).send(error.details[0].message)
+
+    //find userby email
+    User.find({
+        name: req.body.name,
+      }).exec()
+      .then(async findResult => {
+          console.log(findResult)
+          if (findResult.length <= 0) {
+              console.log(findResult)
+            res.status(409).send("User name not exist")
+          } else {
+              const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
+              if(checkPassword){
+                  const token = jwt.sign({_id: findResult[0]._id},"gkuybbghashafafgyb")
+                  res.header('auth-token',token).send(token)
+              } else{
+                res.status(403).send("username or passsword error")
+              }
+              
+          }
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(400).send(err)
+      });
+  }
