@@ -55,7 +55,7 @@ exports.register = async (req, res, next) => {
                         to: req.body.email,
                         subject: 'Conrfirm Email - no @reply',
                         text: `Hi ${req.body.name},
-                        click this link to confirm the email http://localhost:3000/user/consirm_mail/${req.body._id}
+                        click this link to confirm the email http://localhost:3000/user/confirm_mail/${result._id}
                         `
                     };
 
@@ -93,15 +93,21 @@ exports.user_login = async (req, res, next) => {
                 console.log(findResult)
                 res.status(409).send("User name not exist")
             } else {
-                const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
-                if (checkPassword) {
-                    const token = jwt.sign({
-                        _id: findResult[0]._id
-                    }, "gkuybbghashafafgyb")
-                    res.header('auth-token', token).send(token)
+                if (findResult[0].active) {
+                    
+                    const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
+                    if (checkPassword) {
+                        const token = jwt.sign({
+                            _id: findResult[0]._id
+                        }, "gkuybbghashafafgyb")
+                        res.header('auth-token', token).send(token)
+                    } else {
+                        res.status(403).send("username or passsword error")
+                    }
                 } else {
-                    res.status(403).send("username or passsword error")
+                    res.status(403).send("Email not verified")
                 }
+
 
             }
         })
@@ -113,20 +119,16 @@ exports.user_login = async (req, res, next) => {
 
 
 exports.confirm_email = async (req, res, next) => {
+    console.log(req.params)
 
     //find userby email
-    User.find({
-            _id: req.params.id,
+    User.findByIdAndUpdate(req.params.id, {
+            "active": true
+        }, {
+            useFindAndModify: false
         }).exec()
         .then(async findResult => {
-            console.log(findResult)
-            if (findResult.length == 0) {
-                console.log(findResult)
-                res.status(409).send("User not exist")
-            } else {
-
-
-            }
+            res.status(200).send(findResult)
         })
         .catch(err => {
             console.log(err);
