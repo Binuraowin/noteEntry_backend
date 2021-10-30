@@ -55,7 +55,7 @@ exports.register = async (req, res, next) => {
                         to: req.body.email,
                         subject: 'Conrfirm Email - no @reply',
                         text: `Hi ${req.body.name},
-                        click this link to confirm the email http://localhost:3000/user/confirm-mail/${result._id}
+                        click this link to confirm the email https://notes-app-my.herokuapp.com/user/confirm-mail/${result._id}
                         `
                     };
 
@@ -159,7 +159,7 @@ exports.forgot_password = async (req, res, next) => {
                 to: findResult[0].email,
                 subject: 'Conrfirm Email - no @reply',
                 text: `Hi ${findResult[0].name},
-                To reset password use this link  http://localhost:3000/user//forgot-password/${findResult[0]._id}
+                To reset password use this link  https://notes-app-my.herokuapp.com/user/forgot-password/${findResult[0]._id}
                 `
             };
 
@@ -174,7 +174,7 @@ exports.forgot_password = async (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(err)
+            res.status(400).send("user not found")
         });
 }
 
