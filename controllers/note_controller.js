@@ -44,12 +44,13 @@ exports.note_create = (req, res, next) => {
 
   exports.note_delete = (req, res, next) => {
     const id = req.params.id;
+    console.log(id)
     Note.find({
-      id: id,
-    }).select(" _id title description")
+      _id: id,
+    })
     .exec()
     .then(doc => {
-      if (doc) {
+      if (doc[0]) {
         console.log(doc)
         Note.findByIdAndRemove({
           _id: doc[0]._id
