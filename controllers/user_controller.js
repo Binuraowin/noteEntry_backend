@@ -55,7 +55,7 @@ exports.register = async (req, res, next) => {
                         to: req.body.email,
                         subject: 'Conrfirm Email - no @reply',
                         text: `Hi ${req.body.name},
-                        click this link to confirm the email http://localhost:3000/user/confirm_mail/${result._id}
+                        click this link to confirm the email http://localhost:3000/user/confirm-mail/${result._id}
                         `
                     };
 
@@ -94,7 +94,7 @@ exports.user_login = async (req, res, next) => {
                 res.status(409).send("User name not exist")
             } else {
                 if (findResult[0].active) {
-                    
+
                     const checkPassword = await bcrypt.compare(req.body.password, findResult[0].password)
                     if (checkPassword) {
                         const token = jwt.sign({
@@ -121,12 +121,76 @@ exports.user_login = async (req, res, next) => {
 exports.confirm_email = async (req, res, next) => {
     console.log(req.params)
 
-    //find userby email
+    //find userby id
     User.findByIdAndUpdate(req.params.id, {
             "active": true
         }, {
             useFindAndModify: false
         }).exec()
+        .then(async findResult => {
+            res.status(200).send(findResult)
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(400).send(err)
+        });
+}
+
+exports.forgot_password = async (req, res, next) => {
+    console.log(req.body)
+
+    //find userby email
+    User.find({
+        email: req.body.email,
+    }).exec()
+        .then(async findResult => {
+            //sending email
+            var transporter = nodemailer.createTransport(smtpTransport({
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                auth: {
+                    user: 'blabsbinura@gmail.com',
+                    pass: '80216620Bi'
+                }
+            }));
+
+            var mailOptions = {
+                from: 'blabsbinura@gmail.com',
+                to: findResult[0].email,
+                subject: 'Conrfirm Email - no @reply',
+                text: `Hi ${findResult[0].name},
+                To reset password use this link  http://localhost:3000/user//forgot-password/${findResult[0]._id}
+                `
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+            res.status(200).send("password sent to mail")
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(400).send(err)
+        });
+}
+
+exports.reset_password = async (req, res, next) => {
+    console.log(req.body)
+
+       //encrypt the password
+       const salt = await bcrypt.genSalt(10);
+       const hashedPassword = await bcrypt.hash(req.body.password, salt)
+
+    //find userby email
+    User.findByIdAndUpdate(req.params.id, {
+        "password": hashedPassword
+    }, {
+        useFindAndModify: false
+    }).exec()
         .then(async findResult => {
             res.status(200).send(findResult)
         })
