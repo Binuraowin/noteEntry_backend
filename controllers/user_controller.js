@@ -160,6 +160,8 @@ exports.forgot_password = async (req, res, next) => {
                 subject: 'Conrfirm Email - no @reply',
                 text: `Hi ${findResult[0].name},
                 To reset password use this link  https://notes-app-my.herokuapp.com/user/forgot-password/${findResult[0]._id}
+
+                note:- copy link and send post request with new password
                 `
             };
 
