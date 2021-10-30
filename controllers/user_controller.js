@@ -55,7 +55,7 @@ exports.register = async (req, res, next) => {
                         to: req.body.email,
                         subject: 'Conrfirm Email - no @reply',
                         text: `Hi ${req.body.name},
-                        click this link to confirm the email http://localhost:3000/user/confirm-mail/${result._id}
+                        click this link to confirm the email https://notes-app-my.herokuapp.com/user/confirm-mail/${result._id}
                         `
                     };
 
