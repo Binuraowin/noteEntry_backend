@@ -174,7 +174,7 @@ exports.forgot_password = async (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(err)
+            res.status(400).send("user not found")
         });
 }
 
