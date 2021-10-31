@@ -7,14 +7,19 @@ var smtpTransport = require('nodemailer-smtp-transport');
 const {
     registerValidation,
     loginValidation
-} = require('../validator')
+} = require('../validator');
+const {
+    json
+} = require("express");
 
 exports.register = async (req, res, next) => {
     //validate user name and email
     const {
         error
     } = registerValidation(req.body)
-    if (error) return res.status(400).send(error.details[0].message)
+    if (error) return res.status(400).send(json({
+        message:error.details[0].message
+    }))
     //encrypt the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
@@ -27,7 +32,9 @@ exports.register = async (req, res, next) => {
 
     if (checkUserName.length > 0) {
         console.log(checkUserName)
-        res.status(409).send("User Name is exist")
+        res.status(409).send(json({
+            message:"User Name is exist"
+        }))
     } else {
         const user = new User({
             _id: new mongoose.Types.ObjectId(),
@@ -66,11 +73,15 @@ exports.register = async (req, res, next) => {
                             console.log('Email sent: ' + info.response);
                         }
                     });
-                    res.status(201)
-                    res.send(result)
+                    res.status(201).send(json({
+                        message: "Link sent to the mail",
+                        data: result
+                    }))
                 })
         } catch (error) {
-            res.status(400).send(error)
+            res.status(400).send(json({
+                message:error
+            }))
         }
     }
 
@@ -81,7 +92,9 @@ exports.user_login = async (req, res, next) => {
     const {
         error
     } = loginValidation(req.body)
-    if (error) return res.status(400).send(error.details[0].message)
+    if (error) return res.status(400).send(json({
+        message:error.details[0].message
+    }))
 
     //find userby email
     User.find({
@@ -91,7 +104,9 @@ exports.user_login = async (req, res, next) => {
             console.log(findResult)
             if (findResult.length == 0) {
                 console.log(findResult)
-                res.status(409).send("User name not exist")
+                res.status(409).send(json({
+                    message:"User name not exist"
+                }))
             } else {
                 if (findResult[0].active) {
 
@@ -102,10 +117,14 @@ exports.user_login = async (req, res, next) => {
                         }, "gkuybbghashafafgyb")
                         res.header('auth-token', token).send(token)
                     } else {
-                        res.status(403).send("username or passsword error")
+                        res.status(403).send(json({
+                            message:"username or passsword error"
+                        }))
                     }
                 } else {
-                    res.status(403).send("Email not verified")
+                    res.status(403).send(json({
+                        message:"Email not verified"
+                    }))
                 }
 
 
@@ -113,7 +132,9 @@ exports.user_login = async (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(err)
+            res.status(400).send(json({
+                message:err
+            }))
         });
 }
 
@@ -130,11 +151,13 @@ exports.confirm_email = async (req, res, next) => {
         .then(async findResult => {
             res.status(200).json({
                 message: "successfully email activated"
-              });
+            });
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(err)
+            res.status(400).send(json({
+                message:err
+            }))
         });
 }
 
@@ -174,11 +197,16 @@ exports.forgot_password = async (req, res, next) => {
                     console.log('Email sent: ' + info.response);
                 }
             });
-            res.status(200).send("password sent to mail")
+            res.status(200).send(json({
+                message: "password sent to mail"
+            }))
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send("user not found")
+            res.status(400).send(json({
+                message: "user not found",
+                error: err
+            }))
         });
 }
 
@@ -196,10 +224,15 @@ exports.reset_password = async (req, res, next) => {
             useFindAndModify: false
         }).exec()
         .then(async findResult => {
-            res.status(200).send(findResult)
+            res.status(200).send(json({
+                message: "successfully reset password",
+                data: findResult
+            }))
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(err)
+            res.status(400).send(json({
+                message: err
+            }))
         });
 }
