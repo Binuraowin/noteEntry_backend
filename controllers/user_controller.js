@@ -17,9 +17,9 @@ exports.register = async (req, res, next) => {
     const {
         error
     } = registerValidation(req.body)
-    if (error) return res.status(400).send(json({
+    if (error) return res.status(400).json({
         message:error.details[0].message
-    }))
+    })
     //encrypt the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt)
@@ -32,9 +32,9 @@ exports.register = async (req, res, next) => {
 
     if (checkUserName.length > 0) {
         console.log(checkUserName)
-        res.status(409).send(json({
+        res.status(409).json({
             message:"User Name is exist"
-        }))
+        })
     } else {
         const user = new User({
             _id: new mongoose.Types.ObjectId(),
@@ -73,15 +73,15 @@ exports.register = async (req, res, next) => {
                             console.log('Email sent: ' + info.response);
                         }
                     });
-                    res.status(201).send(json({
+                    res.status(201).json({
                         message: "Link sent to the mail",
                         data: result
-                    }))
+                    })
                 })
         } catch (error) {
-            res.status(400).send(json({
+            res.status(400).json({
                 message:error
-            }))
+            })
         }
     }
 
@@ -92,9 +92,9 @@ exports.user_login = async (req, res, next) => {
     const {
         error
     } = loginValidation(req.body)
-    if (error) return res.status(400).send(json({
+    if (error) return res.status(400).json({
         message:error.details[0].message
-    }))
+    })
 
     //find userby email
     User.find({
@@ -104,9 +104,9 @@ exports.user_login = async (req, res, next) => {
             console.log(findResult)
             if (findResult.length == 0) {
                 console.log(findResult)
-                res.status(409).send(json({
+                res.status(409).json({
                     message:"User name not exist"
-                }))
+                })
             } else {
                 if (findResult[0].active) {
 
@@ -117,14 +117,14 @@ exports.user_login = async (req, res, next) => {
                         }, "gkuybbghashafafgyb")
                         res.header('auth-token', token).send(token)
                     } else {
-                        res.status(403).send(json({
+                        res.status(403).json({
                             message:"username or passsword error"
-                        }))
+                        })
                     }
                 } else {
-                    res.status(403).send(json({
+                    res.status(403).json({
                         message:"Email not verified"
-                    }))
+                    })
                 }
 
 
@@ -132,9 +132,9 @@ exports.user_login = async (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(json({
+            res.status(400).json({
                 message:err
-            }))
+            })
         });
 }
 
@@ -155,9 +155,9 @@ exports.confirm_email = async (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(json({
+            res.status(400).json({
                 message:err
-            }))
+            })
         });
 }
 
@@ -197,16 +197,16 @@ exports.forgot_password = async (req, res, next) => {
                     console.log('Email sent: ' + info.response);
                 }
             });
-            res.status(200).send(json({
+            res.status(200).json({
                 message: "password sent to mail"
-            }))
+            })
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(json({
+            res.status(400).json({
                 message: "user not found",
                 error: err
-            }))
+            })
         });
 }
 
@@ -224,15 +224,15 @@ exports.reset_password = async (req, res, next) => {
             useFindAndModify: false
         }).exec()
         .then(async findResult => {
-            res.status(200).send(json({
+            res.status(200).json({
                 message: "successfully reset password",
                 data: findResult
-            }))
+            })
         })
         .catch(err => {
             console.log(err);
-            res.status(400).send(json({
+            res.status(400).son({
                 message: err
-            }))
+            })
         });
 }
