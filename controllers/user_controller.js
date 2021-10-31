@@ -128,7 +128,9 @@ exports.confirm_email = async (req, res, next) => {
             useFindAndModify: false
         }).exec()
         .then(async findResult => {
-            res.status(200).send(findResult)
+            res.status(200).json({
+                message: "successfully email activated"
+              });
         })
         .catch(err => {
             console.log(err);
