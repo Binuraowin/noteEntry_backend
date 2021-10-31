@@ -55,7 +55,7 @@ exports.register = async (req, res, next) => {
                         to: req.body.email,
                         subject: 'Conrfirm Email - no @reply',
                         text: `Hi ${req.body.name},
-                        click this link to confirm the email https://notes-app-my.herokuapp.com/user/confirm-mail/${result._id}
+                        click this link to confirm the email https://notes-app-my.herokuapp.com/user/confirm/${result._id}
                         `
                     };
 
@@ -141,8 +141,8 @@ exports.forgot_password = async (req, res, next) => {
 
     //find userby email
     User.find({
-        email: req.body.email,
-    }).exec()
+            email: req.body.email,
+        }).exec()
         .then(async findResult => {
             //sending email
             var transporter = nodemailer.createTransport(smtpTransport({
@@ -159,7 +159,7 @@ exports.forgot_password = async (req, res, next) => {
                 to: findResult[0].email,
                 subject: 'Conrfirm Email - no @reply',
                 text: `Hi ${findResult[0].name},
-                To reset password use this link  https://notes-app-my.herokuapp.com/user/forgot-password/${findResult[0]._id}
+                To reset password use this link  https://notes-app-my.herokuapp.com/user/forgot/${findResult[0]._id}
 
                 note:- copy link and send post request with new password
                 `
@@ -183,16 +183,16 @@ exports.forgot_password = async (req, res, next) => {
 exports.reset_password = async (req, res, next) => {
     console.log(req.body)
 
-       //encrypt the password
-       const salt = await bcrypt.genSalt(10);
-       const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    //encrypt the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt)
 
     //find userby email
     User.findByIdAndUpdate(req.params.id, {
-        "password": hashedPassword
-    }, {
-        useFindAndModify: false
-    }).exec()
+            "password": hashedPassword
+        }, {
+            useFindAndModify: false
+        }).exec()
         .then(async findResult => {
             res.status(200).send(findResult)
         })
